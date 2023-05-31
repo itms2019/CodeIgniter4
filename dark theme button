@@ -1,0 +1,96 @@
+<!-- menu.php -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Menu</title>
+</head>
+<body>
+    <h1>Menu</h1>
+    
+    <form method="post" action="<?= site_url('menu') ?>">
+        <select name="option">
+            <option value="option1">Option 1</option>
+            <option value="option2">Option 2</option>
+            <option value="option3">Option 3</option>
+        </select>
+        <button type="submit">Αποθήκευση</button>
+    </form>
+</body>
+</html>
+<?php
+
+namespace App\Controllers;
+
+use App\Models\SettingsModel;
+use CodeIgniter\Controller;
+
+class Menu extends Controller
+{
+    public function index()
+    {
+        $request = service('request');
+
+        // Ελέγχουμε αν έχει γίνει υποβολή της φόρμας
+        if ($request->getMethod() === 'post' && $request->getPost('option')) {
+            $option = $request->getPost('option');
+
+            // Αποθηκεύουμε την επιλογή του χρήστη στη βάση δεδομένων
+            $settingsModel = new SettingsModel();
+            $settingsModel->saveOption($option);
+        }
+
+        // Εμφανίζουμε την προβολή του μενού
+        return view('menu');
+    }
+}
+<?php
+
+namespace App\Models;
+
+use CodeIgniter\Model;
+
+class SettingsModel extends Model
+{
+    protected $table = 'settings';
+    protected $primaryKey = 'id';
+    protected $allowedFields = ['option'];
+
+    public function saveOption($option)
+    {
+        // Αποθηκεύουμε την επιλογή του χρήστη στη βάση δεδομένων
+        $data = [
+            'option' => $option
+        ];
+        $this->insert($data);
+    }
+
+    public function getOption()
+    {
+        // Ανακτούμε την επιλογή του χρήστη από τη βάση δεδομένων
+        $row = $this->first();
+        if ($row) {
+            return $row['option'];
+        } else {
+            return null;
+        }
+    }
+}
+<?php
+
+namespace App\Controllers;
+
+use App\Models\SettingsModel;
+use CodeIgniter\Controller;
+
+class Loader extends Controller
+{
+    public function index()
+    {
+        $settingsModel = new SettingsModel();
+        $option = $settingsModel->getOption();
+
+        // Ορίζουμε το αντίστοιχο CSS ανάλογα με την επιλογή
+        $css_file = '';
+        switch ($option) {
+            case 'option1':
