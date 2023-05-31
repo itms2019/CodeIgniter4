@@ -1,0 +1,90 @@
+<!-- menu.php -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Menu</title>
+</head>
+<body>
+    <h1>Menu</h1>
+    
+    <form method="post" action="<?= site_url('menu') ?>">
+        <select name="option">
+            <option value="option1">Option 1</option>
+            <option value="option2">Option 2</option>
+        </select>
+        <button type="submit">Αποθήκευση</button>
+    </form>
+</body>
+</html>
+<?php
+
+namespace App\Controllers;
+
+use App\Models\SettingsModel;
+use CodeIgniter\Controller;
+
+class Menu extends Controller
+{
+    public function index()
+    {
+        $request = service('request');
+
+        if ($request->getMethod() === 'post' && $request->getPost('option')) {
+            $option = $request->getPost('option');
+
+            $settingsModel = new SettingsModel();
+            $settingsModel->saveOption($option);
+        }
+
+        return view('menu');
+    }
+}
+<?php
+
+namespace App\Models;
+
+use CodeIgniter\Model;
+
+class SettingsModel extends Model
+{
+    protected $table = 'settings';
+    protected $primaryKey = 'id';
+    protected $allowedFields = ['option'];
+
+    public function saveOption($option)
+    {
+        $data = [
+            'option' => $option
+        ];
+        $this->insert($data);
+    }
+
+    public function getOption()
+    {
+        $row = $this->first();
+        if ($row) {
+            return $row['option'];
+        } else {
+            return null;
+        }
+    }
+}
+<?php
+
+namespace App\Controllers;
+
+use App\Models\SettingsModel;
+use CodeIgniter\Controller;
+
+class Loader extends Controller
+{
+    public function index()
+    {
+        $settingsModel = new SettingsModel();
+        $option = $settingsModel->getOption();
+
+        $css_file = '';
+        switch ($option) {
+            case 'option1':
+
